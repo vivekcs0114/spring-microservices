@@ -1,5 +1,6 @@
 package com.synerzip.currencyconversionservice;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,6 +13,9 @@ import java.util.Map;
 
 @RestController
 public class CurrencyConversionController {
+
+    @Autowired
+    private CurrencyExchangeServiceProxy proxy;
 
     @GetMapping("/currency-converter/from/{from}/to/{to}/quantity/{quantity}")
     private CurrencyConversionBean convertCurrency(@PathVariable String from, @PathVariable String to
@@ -26,5 +30,13 @@ public class CurrencyConversionController {
         CurrencyConversionBean response = responseEntity.getBody();
         return new CurrencyConversionBean(response.getId(),from,to,response.getConversionMultiple(),
                quantity,quantity.multiply(response.getConversionMultiple()),response.getPort());
+    }
+
+    @GetMapping("/currency-converter-feign/from/{from}/to/{to}/quantity/{quantity}")
+    private CurrencyConversionBean convertCurrencyFeign(@PathVariable String from, @PathVariable String to
+            , @PathVariable BigDecimal quantity) {
+        CurrencyConversionBean response = proxy.retrieveExchangeValue(from,to);
+        return new CurrencyConversionBean(response.getId(),from,to,response.getConversionMultiple(),
+                quantity,quantity.multiply(response.getConversionMultiple()),response.getPort());
     }
 }
